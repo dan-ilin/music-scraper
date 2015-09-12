@@ -10,6 +10,9 @@
 
 (def url "https://www.reddit.com/r/listentothis/new.json")
 
+; store results in map by post-id
+(def result-map (atom {}))
+
 (defn parse-track-data [track]
   (try
     (let [artist-track (str/split (re-find (:artist-track patterns) track) #" --? ")]
@@ -35,5 +38,13 @@
 (defn get-page-data [body]
   (:data (json/read-str body :key-fn keyword)))
 
+(defn result-not-in-map [result]
+  (let [post-id (:name result)]
+    (contains? @result-map post-id)))
+
+(def page (get-page-data (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}}))))
+
 (defn process-page [page]
-  (map #'map-post (:children page)))
+  (doseq [x (map #'map-post (:children page))]
+    (print x)
+    (reset! result-map (assoc @result-map (:post-id x) x))))
