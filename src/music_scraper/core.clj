@@ -48,3 +48,9 @@
   (doseq [x (map #'map-post (:children page))]
     (print x)
     (reset! result-map (assoc @result-map (:post-id x) x))))
+
+(defn read-results []
+  (json/read-str (slurp "results.json")))
+
+(defn save-results [result-map]
+  (spit "results.json" (json/write-str result-map)))
