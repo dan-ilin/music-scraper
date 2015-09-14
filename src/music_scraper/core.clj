@@ -1,7 +1,8 @@
 (ns music-scraper.core
   [:require [clj-http.client :as client]
             [clojure.data.json :as json]
-            [clojure.string :as str]])
+            [clojure.string :as str]
+            [clojure.java.io :as io]])
 
 (def patterns {:artist-track #".* --? [^\[]*"
                :year         #"\(\d{4}\)"
@@ -9,6 +10,7 @@
                :comment      #"[^)]*$"})
 
 (def url "https://www.reddit.com/r/listentothis/new.json")
+(def filename "results.json")
 
 ; store results in map by post-id
 (def result-map (atom {}))
@@ -35,22 +37,32 @@
        :track         (:track parsed-data)
        :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))})))
 
+(defn result-not-in-map [map result]
+  (not (contains? map (:name (:data result)))))
+
 (defn get-page-data [body]
   (:data (json/read-str body :key-fn keyword)))
-
-(defn result-not-in-map [result]
-  (let [post-id (:name result)]
-    (contains? @result-map post-id)))
 
 (def page (get-page-data (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}}))))
 
 (defn process-page [page]
-  (doseq [x (map #'map-post (:children page))]
-    (print x)
-    (reset! result-map (assoc @result-map (:post-id x) x))))
+  (let [filtered-results (filter (partial result-not-in-map @result-map) (:children page))]
+    (println (count filtered-results))
+    (doseq [x (map #'map-post filtered-results)]
+      (reset! result-map (assoc @result-map (:post-id x) x)))))
 
-(defn read-results []
-  (json/read-str (slurp "results.json")))
+(defn read-results [filename]
+  (json/read-str (slurp filename)))
 
-(defn save-results [result-map]
-  (spit "results.json" (json/write-str result-map)))
+(defn save-results [filename result-map]
+  (spit filename (json/write-str result-map)))
+
+(defn -main [& args]
+  (println "Loading previous results")
+  (if (.exists (io/file filename))
+    (reset! result-map (read-results filename))
+    (println "No previous results found"))
+  (println "Processing results")
+  (process-page page)
+  (println "Saving results")
+  (save-results filename @result-map))
