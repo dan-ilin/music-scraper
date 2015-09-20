@@ -14,6 +14,7 @@
 
 ; store results in map by post-id
 (def result-map (atom {}))
+(def parsing-finished (atom false))
 
 (defn parse-track-data [track]
   (try
@@ -30,7 +31,7 @@
 (defn map-post [post]
   (let [{data :data} post]
     (let [parsed-data (parse-track-data (:title data))]
-      {:post-id       (:name data)
+      {:post-id       (:id data)
        :time          (:created_utc data)
        :media-url     (:url data)
        :artist        (:artist parsed-data)
@@ -38,18 +39,16 @@
        :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))})))
 
 (defn result-not-in-map [map result]
-  (not (contains? map (:name (:data result)))))
+  (not (contains? map (:id (:data result)))))
 
 (defn get-page-data [body]
   (:data (json/read-str body :key-fn keyword)))
 
-(def page (get-page-data (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}}))))
-
-(defn process-page [page]
-  (let [filtered-results (filter (partial result-not-in-map @result-map) (:children page))]
-    (println (count filtered-results))
-    (doseq [x (map #'map-post filtered-results)]
-      (reset! result-map (assoc @result-map (:post-id x) x)))))
+(defn get-page [base-url after]
+  (get-page-data (:body (client/get base-url
+                                    {:query-params  {:after after}
+                                     :accept        :json
+                                     :client-params {"http.useragent" "music-scraper"}}))))
 
 (defn read-results [filename]
   (json/read-str (slurp filename)))
@@ -57,12 +56,27 @@
 (defn save-results [filename result-map]
   (spit filename (json/write-str result-map)))
 
+(defn process [page]
+  (let [filtered-results (filter (partial result-not-in-map @result-map) (:children page))]
+    (println (count filtered-results))
+    (doseq [x (map #'map-post filtered-results)]
+      (reset! parsing-finished true)                        ; parsing finished when timestamp >= latest-timestamp value reached
+      (reset! result-map (assoc @result-map                 ; else update result-map
+                           (:post-id x) x
+                           :latest-timestamp (:time x)))))
+  (save-results filename @result-map)
+  (println "Saving results to file")
+  (println (:after page))
+  (Thread/sleep 500)
+  (if (not (nil? (:after page)))
+    (process (get-page url (:after page)))))
+
 (defn -main [& args]
-  (println "Loading previous results")
-  (if (.exists (io/file filename))
-    (reset! result-map (read-results filename))
-    (println "No previous results found"))
-  (println "Processing results")
-  (process-page page)
-  (println "Saving results")
-  (save-results filename @result-map))
+  (let [page (get-page-data
+               (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}})))]
+    (println "Loading previous results")
+    (if (.exists (io/file filename))
+      (reset! result-map (read-results filename))
+      (println "No previous results found"))
+    (println "Processing results")
+    (process page)))
