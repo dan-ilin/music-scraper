@@ -11,3 +11,5 @@ pom.xml.asc
 *.json
 *.iml
 .idea/*
+
+profiles.clj
