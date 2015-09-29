@@ -19,8 +19,8 @@
                                            :basic-auth  [(:client-id spotify-creds) (:client-secret spotify-creds)]}))
                            :key-fn keyword))))
 
-; todo: use oauth token properly
 (defn search-spotify-track [track]
-  (client/get "https://api.spotify.com/v1/search"
-              {:query-params {:q track :type "track"}
-               :accept       :json}))
+  (json/read-str (:body (client/get "https://api.spotify.com/v1/search"
+                                    {:query-params {:q track :type "track"}
+                                     :accept       :json
+                                     :oauth-token  @access-token}))))
