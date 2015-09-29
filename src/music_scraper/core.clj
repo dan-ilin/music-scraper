@@ -2,7 +2,8 @@
   [:require [clj-http.client :as client]
             [clojure.data.json :as json]
             [clojure.string :as str]
-            [clojure.java.io :as io]])
+            [clojure.java.io :as io]
+            [music-scraper.store :as store]])
 
 (def patterns {:artist-track #".* --? [^\[]*"
                :year         #"\(\d{4}\)"
@@ -12,8 +13,6 @@
 (def url "https://www.reddit.com/r/listentothis/new.json")
 (def filename "results.json")
 
-; store results in map by post-id
-(def result-map (atom {}))
 (def parsing-finished (atom false))
 
 (defn parse-track-data [track]
@@ -50,21 +49,15 @@
                                      :accept        :json
                                      :client-params {"http.useragent" "music-scraper"}}))))
 
-(defn read-results [filename]
-  (json/read-str (slurp filename)))
-
-(defn save-results [filename result-map]
-  (spit filename (json/write-str result-map)))
-
 (defn process [page]
-  (let [filtered-results (filter (partial result-not-in-map @result-map) (:children page))]
+  (let [filtered-results (filter (partial result-not-in-map @store/result-map) (:children page))]
     (println (count filtered-results))
     (doseq [x (map #'map-post filtered-results)]
       (reset! parsing-finished true)                        ; parsing finished when timestamp >= latest-timestamp value reached
-      (reset! result-map (assoc @result-map                 ; else update result-map
+      (reset! store/result-map (assoc @store/result-map                 ; else update result-map
                            (:post-id x) x
                            :latest-timestamp (:time x)))))
-  (save-results filename @result-map)
+  (store/save-results filename @store/result-map)
   (println "Saving results to file")
   (println (:after page))
   (Thread/sleep 500)
@@ -76,7 +69,7 @@
                (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}})))]
     (println "Loading previous results")
     (if (.exists (io/file filename))
-      (reset! result-map (read-results filename))
+      (reset! store/result-map (store/read-results filename))
       (println "No previous results found"))
     (println "Processing results")
     (process page)))
