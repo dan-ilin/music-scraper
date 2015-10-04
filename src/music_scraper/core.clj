@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [clojure.java.io :as io]
             [music-scraper.store :as store]
-            [music-scraper.reddit.client :as reddit]])
+            [music-scraper.reddit.client :as reddit]
+            [music-scraper.spotify.client :as spotify]])
 
 (def patterns {:artist-track #".* --? [^\[]*"
                :year         #"\(\d{4}\)"
@@ -40,17 +41,21 @@
 (defn process [page]
   (let [filtered-results (filter (partial result-not-in-map @store/result-map) (:children page))]
     (doseq [x (map #'map-post filtered-results)]
-      (reset! store/result-map (assoc @store/result-map (:post-id x) x))))
+      (if (not (:parse-failed? x))
+        (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track x)))) 0)]
+          (if (not (empty? (spotify/match-artist (:artist x) first-match)))
+            (reset! store/result-map (assoc @store/result-map (:post-id x) (assoc x :spotify-match first-match)))
+            (reset! store/result-map (assoc @store/result-map (:post-id x) x)))))))
   (store/save-results filename @store/result-map)
   (println "Saving results to file")
   (Thread/sleep 500)
-  (if (not (nil? (:after page)))
-    (process (reddit/get-page url (:after page)))))
+  ;(if (not (nil? (:after page)))
+  ;  (process (reddit/get-page url (:after page))))
+  )
 
 (defn -main [& args]
   (let [page (reddit/get-page-data
-               (:body (client/get url {:accept        :json
-                                       :client-params {"http.useragent" "music-scraper"}})))]
+               (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}})))]
     (println "Loading previous results")
     (if (.exists (io/file filename))
       (reset! store/result-map (store/read-results filename))

@@ -23,4 +23,8 @@
   (json/read-str (:body (client/get "https://api.spotify.com/v1/search"
                                     {:query-params {:q track :type "track"}
                                      :accept       :json
-                                     :oauth-token  @access-token}))))
+                                     :oauth-token  @access-token}))
+                 :key-fn keyword))
+
+(defn match-artist [artist result]
+  (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
