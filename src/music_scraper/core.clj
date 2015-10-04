@@ -3,7 +3,8 @@
             [clojure.data.json :as json]
             [clojure.string :as str]
             [clojure.java.io :as io]
-            [music-scraper.store :as store]])
+            [music-scraper.store :as store]
+            [music-scraper.spotify.client :as spotify]])
 
 (def patterns {:artist-track #".* --? [^\[]*"
                :year         #"\(\d{4}\)"
@@ -12,8 +13,6 @@
 
 (def url "https://www.reddit.com/r/listentothis/new.json")
 (def filename "results.json")
-
-(def parsing-finished (atom false))
 
 (defn parse-track-data [track]
   (try
@@ -24,8 +23,7 @@
        :genre-tags (let [tags (re-find (:genre-tags patterns) track)]
                      (str/split (subs tags 1 (- (.length tags) 1)) #" "))
        :comment    (re-find (:comment patterns) track)})
-    (catch Exception e
-      (println e))))
+    (catch Exception e)))
 
 (defn map-post [post]
   (let [{data :data} post]
@@ -44,22 +42,19 @@
   (:data (json/read-str body :key-fn keyword)))
 
 (defn get-page [base-url after]
-  (get-page-data (:body (client/get base-url
-                                    {:query-params  {:after after}
-                                     :accept        :json
-                                     :client-params {"http.useragent" "music-scraper"}}))))
+  (get-page-data (:body
+                   (client/get base-url
+                               {:query-params  {:after after}
+                                :accept        :json
+                                :client-params {"http.useragent" "music-scraper"}}))))
 
 (defn process [page]
   (let [filtered-results (filter (partial result-not-in-map @store/result-map) (:children page))]
-    (println (count filtered-results))
     (doseq [x (map #'map-post filtered-results)]
-      (reset! parsing-finished true)                        ; parsing finished when timestamp >= latest-timestamp value reached
-      (reset! store/result-map (assoc @store/result-map                 ; else update result-map
-                           (:post-id x) x
-                           :latest-timestamp (:time x)))))
+      (reset! store/result-map (assoc @store/result-map
+                                 (:post-id x) x))))
   (store/save-results filename @store/result-map)
   (println "Saving results to file")
-  (println (:after page))
   (Thread/sleep 500)
   (if (not (nil? (:after page)))
     (process (get-page url (:after page)))))
