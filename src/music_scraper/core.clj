@@ -49,9 +49,8 @@
   (store/save-results filename @store/result-map)
   (println "Saving results to file")
   (Thread/sleep 500)
-  ;(if (not (nil? (:after page)))
-  ;  (process (reddit/get-page url (:after page))))
-  )
+  (if (not (nil? (:after page)))
+    (process (reddit/get-page url (:after page)))))
 
 (defn -main [& args]
   (let [page (reddit/get-page-data
