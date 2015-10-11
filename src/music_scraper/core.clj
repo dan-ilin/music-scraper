@@ -44,8 +44,8 @@
       (if (not (:parse-failed? x))
         (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track x)))) 0)]
           (if (not (empty? (spotify/match-artist (:artist x) first-match)))
-            (reset! store/result-map (assoc @store/result-map (:post-id x) (assoc x :spotify-match first-match)))
-            (reset! store/result-map (assoc @store/result-map (:post-id x) x)))))))
+            (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) (:uri first-match)))
+          (reset! store/result-map (assoc @store/result-map (:post-id x) x))))))
   (store/save-results filename @store/result-map)
   (println "Saving results to file")
   (Thread/sleep 500)
