@@ -7,7 +7,9 @@
 
 (def credentials {:client-id     (env :spotify-client-id)
                   :client-secret (env :spotify-client-secret)
-                  :refresh-token (env :refresh-token)})
+                  :refresh-token (env :refresh-token)
+                  :user-id       (env :user-id)
+                  :playlist-id   (env :playlist-id)})
 
 (defn refresh-token [client-id client-secret refresh-token]
   (reset! access-token
@@ -26,6 +28,11 @@
                                      :accept       :json
                                      :oauth-token  @access-token}))
                  :key-fn keyword))
+
+(defn add-to-playlist [user-id playlist-id tracks]
+  (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id)
+               {:query-params {:uris tracks}
+                :oauth-token  @access-token}))
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
