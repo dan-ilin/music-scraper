@@ -3,43 +3,22 @@
             [clj-http.client :as client]
             [clojure.data.json :as json]))
 
-(def access-token (atom nil))
-(def account-auth (atom nil))
+(def access-token (atom (env :access-token)))
 
-(def spotify-creds
-  {:client-id     (env :spotify-client-id)
-   :client-secret (env :spotify-client-secret)
-   :code          (env :spotify-auth-code)
-   :redirect-uri  (env :redirect-uri)})
-
-(defn authenticate
-  ([client-id client-secret]
-   (reset! access-token
-           (:access_token (json/read-str (:body
-                                           (client/post "https://accounts.spotify.com/api/token"
-                                                        {:form-params {:grant_type "client_credentials"}
-                                                         :accept      :json
-                                                         :basic-auth  [(:client-id spotify-creds)
-                                                                       (:client-secret spotify-creds)]}))
-                                         :key-fn keyword))))
-  ([client-id client-secret code]
-   (reset! account-auth
-           (json/read-str (:body (client/post "https://accounts.spotify.com/api/token"
-                                              {:form-params {:grant_type   "authorization_code"
-                                                             :code         (:code spotify-creds)
-                                                             :redirect_uri (:redirect-uri spotify-creds)}
-                                               :accept      :json
-                                               :basic-auth  [(:client-id spotify-creds)
-                                                             (:client-secret spotify-creds)]}))))))
+(def credentials {:client-id     (env :spotify-client-id)
+                  :client-secret (env :spotify-client-secret)
+                  :refresh-token (env :refresh-token)})
 
 (defn refresh-token [client-id client-secret refresh-token]
-  (reset! account-auth
-          (json/read-str (:body (client/post "https://accounts.spotify.com/api/token"
-                                             {:form-params {:grant_type    "refresh_token"
-                                                            :refresh_token refresh-token}
-                                              :accept      :json
-                                              :basic-auth  [(:client-id spotify-creds)
-                                                            (:client-secret spotify-creds)]})))))
+  (reset! access-token
+          (:access_token
+            (json/read-str (:body
+                             (client/post "https://accounts.spotify.com/api/token"
+                                          {:form-params {:grant_type    "refresh_token"
+                                                         :refresh_token refresh-token}
+                                           :accept      :json
+                                           :basic-auth  [client-id client-secret]}))
+                           :key-fn keyword))))
 
 (defn search-spotify-track [track]
   (json/read-str (:body (client/get "https://api.spotify.com/v1/search"
