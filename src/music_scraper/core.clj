@@ -37,9 +37,6 @@
        :track         (:track parsed-data)
        :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))})))
 
-(defn result-not-in-map [map result]
-  (not (contains? map (:id (:data result)))))
-
 (defn process-result [result]
   (if (not (:parse-failed? result))
     (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track result)))) 0)]
@@ -48,7 +45,7 @@
       (reset! store/result-map (assoc @store/result-map (:post-id result) result)))))
 
 (defn process-page [page]
-  (let [filtered-results (filter (partial result-not-in-map @store/result-map) (:children page))]
+  (let [filtered-results (filter #(not (contains? @store/result-map (:id (:data %)))) (:children page))]
     (doseq [x (map #'map-post filtered-results)]
       (process-result x))))
 
