@@ -1,5 +1,6 @@
 (ns music-scraper.core
-  [:require [clj-http.client :as client]
+  [:require [clojure.tools.logging :as log]
+            [clj-http.client :as client]
             [clojure.string :as str]
             [clojure.java.io :as io]
             [music-scraper.store :as store]
@@ -23,7 +24,8 @@
        :genre-tags (let [tags (re-find (:genre-tags patterns) track)]
                      (str/split (subs tags 1 (- (.length tags) 1)) #" "))
        :comment    (re-find (:comment patterns) track)})
-    (catch Exception e)))
+    (catch Exception e
+      (log/error e))))
 
 (defn map-post [post]
   (let [{data :data} post]
@@ -47,7 +49,7 @@
             (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) (:uri first-match)))
           (reset! store/result-map (assoc @store/result-map (:post-id x) x))))))
   (store/save-results filename @store/result-map)
-  (println "Saving results to file")
+  (log/info "Saving results to file")
   (Thread/sleep 500)
   (if (not (nil? (:after page)))
     (process (reddit/get-page url (:after page)))))
@@ -55,13 +57,13 @@
 (defn -main [& args]
   (let [page (reddit/get-page-data
                (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}})))]
-    (println "Loading previous results")
+    (log/info "Loading previous results")
     (if (.exists (io/file filename))
       (reset! store/result-map (store/read-results filename))
-      (println "No previous results found"))
-    (println "Refreshing Spotify access token")
+      (log/info "No previous results found"))
+    (log/info "Refreshing Spotify access token")
     (spotify/refresh-token (:client-id spotify/credentials)
                            (:client-secret spotify/credentials)
                            (:refresh-token spotify/credentials))
-    (println "Processing results")
+    (log/info "Processing results")
     (process page)))
