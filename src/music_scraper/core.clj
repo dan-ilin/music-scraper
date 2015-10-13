@@ -40,14 +40,20 @@
 (defn result-not-in-map [map result]
   (not (contains? map (:id (:data result)))))
 
-(defn process [page]
+(defn process-result [result]
+  (if (not (:parse-failed? result))
+    (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track result)))) 0)]
+      (if (not (empty? (spotify/match-artist (:artist result) first-match)))
+        (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) (:uri first-match)))
+      (reset! store/result-map (assoc @store/result-map (:post-id result) result)))))
+
+(defn process-page [page]
   (let [filtered-results (filter (partial result-not-in-map @store/result-map) (:children page))]
     (doseq [x (map #'map-post filtered-results)]
-      (if (not (:parse-failed? x))
-        (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track x)))) 0)]
-          (if (not (empty? (spotify/match-artist (:artist x) first-match)))
-            (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) (:uri first-match)))
-          (reset! store/result-map (assoc @store/result-map (:post-id x) x))))))
+      (process-result x))))
+
+(defn process [page]
+  (process-page page)
   (store/save-results filename @store/result-map)
   (log/info "Saving results to file")
   (Thread/sleep 500)
@@ -55,15 +61,14 @@
     (process (reddit/get-page url (:after page)))))
 
 (defn -main [& args]
-  (let [page (reddit/get-page-data
-               (:body (client/get url {:accept :json :client-params {"http.useragent" "music-scraper"}})))]
-    (log/info "Loading previous results")
-    (if (.exists (io/file filename))
-      (reset! store/result-map (store/read-results filename))
-      (log/info "No previous results found"))
-    (log/info "Refreshing Spotify access token")
-    (spotify/refresh-token (:client-id spotify/credentials)
-                           (:client-secret spotify/credentials)
-                           (:refresh-token spotify/credentials))
-    (log/info "Processing results")
-    (process page)))
+  (log/info "Loading previous results")
+  (if (.exists (io/file filename))
+    (reset! store/result-map (store/read-results filename))
+    (log/info "No previous results found"))
+  (log/info "Refreshing Spotify access token")
+  (spotify/refresh-token (:client-id spotify/credentials)
+                         (:client-secret spotify/credentials)
+                         (:refresh-token spotify/credentials))
+  (log/info "Processing results")
+  (process (reddit/get-page-data (:body (client/get url {:accept        :json
+                                                         :client-params {"http.useragent" "music-scraper"}})))))
