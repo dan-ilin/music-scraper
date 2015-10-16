@@ -31,9 +31,10 @@
                  :key-fn keyword))
 
 (defn add-to-playlist [user-id playlist-id tracks]
-  (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id)
-               {:query-params {:uris (join "," tracks)}
-                :oauth-token  @access-token}))
+  (if (not (empty? tracks))
+    (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id)
+                 {:query-params {:uris (join "," tracks)}
+                  :oauth-token  @access-token})))
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))

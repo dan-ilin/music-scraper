@@ -27,7 +27,7 @@
                      (str/split (subs tags 1 (- (.length tags) 1)) #" "))
        :comment    (re-find (:comment patterns) track)})
     (catch Exception e
-      (log/error e "Exception caught during parsing"))))
+      (log/error e (format "Exception caught during parsing %s" track)))))
 
 (defn map-post [post]
   (let [{data :data} post]
