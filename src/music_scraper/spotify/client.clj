@@ -1,7 +1,8 @@
 (ns music-scraper.spotify.client
   (:require [environ.core :refer [env]]
             [clj-http.client :as client]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [clojure.string :refer [join]]))
 
 (def access-token (atom (env :access-token)))
 
@@ -31,7 +32,7 @@
 
 (defn add-to-playlist [user-id playlist-id tracks]
   (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id)
-               {:query-params {:uris tracks}
+               {:query-params {:uris (join "," tracks)}
                 :oauth-token  @access-token}))
 
 (defn match-artist [artist result]

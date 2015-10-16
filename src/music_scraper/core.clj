@@ -15,6 +15,8 @@
 (def url "https://www.reddit.com/r/listentothis/new.json")
 (def filename "results.json")
 
+(def matched-tracks (atom []))
+
 (defn parse-track-data [track]
   (try
     (let [artist-track (str/split (re-find (:artist-track patterns) track) #" --? ")]
@@ -25,7 +27,7 @@
                      (str/split (subs tags 1 (- (.length tags) 1)) #" "))
        :comment    (re-find (:comment patterns) track)})
     (catch Exception e
-      (log/error e))))
+      (log/error e "Exception caught during parsing"))))
 
 (defn map-post [post]
   (let [{data :data} post]
@@ -41,7 +43,7 @@
   (if (not (:parse-failed? result))
     (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track result)))) 0)]
       (if (not (empty? (spotify/match-artist (:artist result) first-match)))
-        (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) (:uri first-match)))
+        (reset! matched-tracks (conj @matched-tracks (:uri first-match))))
       (reset! store/result-map (assoc @store/result-map (:post-id result) result)))))
 
 (defn process-page [page]
@@ -68,4 +70,6 @@
                          (:refresh-token spotify/credentials))
   (log/info "Processing results")
   (process (reddit/get-page-data (:body (client/get url {:accept        :json
-                                                         :client-params {"http.useragent" "music-scraper"}})))))
+                                                         :client-params {"http.useragent" "music-scraper"}}))))
+  (log/info (format "Adding %d new tracks to Spotify playlist" (count @matched-tracks)))
+  (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) @matched-tracks))
