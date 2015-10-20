@@ -1,4 +1,5 @@
 (ns music-scraper.core
+  (:gen-class :main true)
   [:require [clojure.tools.logging :as log]
             [clj-http.client :as client]
             [clojure.string :as str]
