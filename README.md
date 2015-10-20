@@ -1,6 +1,6 @@
 # music-scraper
 
-A Clojure library designed to ... well, that part is up to you.
+r/listentothis public playlist available at https://open.spotify.com/user/dan_ilin/playlist/04Lei82ABh12oSDkDat9WC
 
 ## Usage
 

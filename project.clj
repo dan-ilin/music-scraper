@@ -1,6 +1,6 @@
 (defproject music-scraper "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "An application that scrapes new posts from Reddit's r/listentothis and adds them to a Spotify playlist"
+  :url "https://github.com/dan-ilin/music-scraper"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]
