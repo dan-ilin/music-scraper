@@ -13,9 +13,6 @@
                :genre-tags   #"\[.*\]"
                :comment      #"[^)]*$"})
 
-(def url "https://www.reddit.com/r/listentothis/new.json")
-(def filename "results.json")
-
 (def matched-tracks (atom []))
 
 (defn parse-track-data [track]
@@ -54,23 +51,23 @@
 
 (defn process [page]
   (process-page page)
-  (store/save-results filename @store/result-map)
+  (store/save-results store/filename @store/result-map)
   (log/info "Saving results to file")
   (Thread/sleep 500)
   (if (not (nil? (:after page)))
-    (process (reddit/get-page url (:after page)))))
+    (process (reddit/get-page reddit/url (:after page)))))
 
 (defn -main [& args]
   (log/info "Loading previous results")
-  (if (.exists (io/file filename))
-    (reset! store/result-map (store/read-results filename))
+  (if (.exists (io/file store/filename))
+    (reset! store/result-map (store/read-results store/filename))
     (log/info "No previous results found"))
   (log/info "Refreshing Spotify access token")
   (spotify/refresh-token (:client-id spotify/credentials)
                          (:client-secret spotify/credentials)
                          (:refresh-token spotify/credentials))
   (log/info "Processing results")
-  (process (reddit/get-page-data (:body (client/get url {:accept        :json
+  (process (reddit/get-page-data (:body (client/get reddit/url {:accept        :json
                                                          :client-params {"http.useragent" "music-scraper"}}))))
   (log/info (format "Adding %d new tracks to Spotify playlist" (count @matched-tracks)))
-  (spotify/add-to-playlist (:user-id spotify/credentials) (:playlist-id spotify/credentials) @matched-tracks))
+  (spotify/add-to-playlist @matched-tracks))

@@ -1,6 +1,8 @@
 (ns music-scraper.store
   (:require [clojure.data.json :as json]))
 
+(def filename "results.json")
+
 ; store results and parsing failures in map by post-id
 (def result-map (atom {}))
 

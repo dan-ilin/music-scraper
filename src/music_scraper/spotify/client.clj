@@ -30,9 +30,11 @@
                                      :oauth-token  @access-token}))
                  :key-fn keyword))
 
-(defn add-to-playlist [user-id playlist-id tracks]
+(defn add-to-playlist [tracks]
   (if (not (empty? tracks))
-    (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id)
+    (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
+                         (:user-id credentials)
+                         (:playlist-id credentials))
                  {:query-params {:uris (join "," tracks)}
                   :oauth-token  @access-token})))
 

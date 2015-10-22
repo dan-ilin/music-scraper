@@ -5,5 +5,5 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder ".", "/vagrant"
 
     config.vm.provision :docker
-    config.vm.provision :docker_compose, yml: "/vagrant/docker-compose.yml", rebuild: true, project_name: "music_scraper", run: "always"
+    config.vm.provision :docker_compose, yml: "/vagrant/docker-compose.yml", rebuild: true, project_name: "scraper"
 end

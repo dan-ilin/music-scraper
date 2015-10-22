@@ -2,6 +2,8 @@
   (:require [clj-http.client :as client]
             [clojure.data.json :as json]))
 
+(def url "https://www.reddit.com/r/listentothis/new.json")
+
 (defn get-page-data [body]
   (:data (json/read-str body :key-fn keyword)))
 
