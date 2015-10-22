@@ -11,6 +11,7 @@ pom.xml.asc
 *.json
 *.iml
 .idea/*
+.vagrant/*
 
 profiles.clj
 docker-compose.yml
