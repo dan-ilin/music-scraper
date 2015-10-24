@@ -14,14 +14,12 @@
 
 (defn refresh-token [client-id client-secret refresh-token]
   (reset! access-token
-          (:access_token
-            (json/read-str (:body
-                             (client/post "https://accounts.spotify.com/api/token"
-                                          {:form-params {:grant_type    "refresh_token"
-                                                         :refresh_token refresh-token}
-                                           :accept      :json
-                                           :basic-auth  [client-id client-secret]}))
-                           :key-fn keyword))))
+          (:access_token (json/read-str (:body (client/post "https://accounts.spotify.com/api/token"
+                                                            {:form-params {:grant_type    "refresh_token"
+                                                                           :refresh_token refresh-token}
+                                                             :accept      :json
+                                                             :basic-auth  [client-id client-secret]}))
+                                        :key-fn keyword))))
 
 (defn search-spotify-track [track]
   (json/read-str (:body (client/get "https://api.spotify.com/v1/search"
