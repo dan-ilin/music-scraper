@@ -1,8 +1,21 @@
+postgres:
+  image: postgres:latest
+  ports:
+    - "5342:5342"
+  environment:
+    - POSTGRES_USER=
+    - POSTGRES_PASSWORD=
+
 app:
   build: /vagrant
   ports:
     - "8080:8080"
+  links:
+    - postgres
   environment:
+    - DATABASE_URL=
+    - DATABASE_USER=
+    - DATABASE_PASS=
     - SPOTIFY_CLIENT_ID=
     - SPOTIFY_CLIENT_SECRET=
     - ACCESS_TOKEN=
