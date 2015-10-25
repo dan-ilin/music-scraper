@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS tracks (
   artist      VARCHAR   NOT NULL,
   track       VARCHAR   NOT NULL,
   parseFailed BOOL      NOT NULL,
-  spotifyUri  VARCHAR
+  spotifyUri  VARCHAR   NOT NULL
 );
 
 -- name: drop-tracks!

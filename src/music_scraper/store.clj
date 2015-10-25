@@ -42,4 +42,4 @@
                                (:parse-failed? track)]))
 
 (defn track-exists? [post-id]
-  (log-query #'track-exists post-id))
+  (:exists (log-query #'track-exists [post-id])))
