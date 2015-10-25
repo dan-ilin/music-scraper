@@ -1,12 +1,13 @@
 -- name: create-tracks!
 -- Create tracks table
 CREATE TABLE IF NOT EXISTS tracks (
-  postId      VARCHAR(255) NOT NULL PRIMARY KEY,
-  time        TIMESTAMP    NOT NULL,
-  mediaUrl    TEXT         NOT NULL,
-  artist      VARCHAR(255) NOT NULL,
-  track       VARCHAR(255) NOT NULL,
-  parseFailed BOOL         NOT NULL
+  postId      VARCHAR   NOT NULL PRIMARY KEY,
+  time        TIMESTAMP NOT NULL,
+  mediaUrl    TEXT      NOT NULL,
+  artist      VARCHAR   NOT NULL,
+  track       VARCHAR   NOT NULL,
+  parseFailed BOOL      NOT NULL,
+  spotifyUri  VARCHAR
 );
 
 -- name: drop-tracks!
@@ -33,4 +34,6 @@ INSERT INTO tracks (
 
 -- name: track-exists
 -- Check if track with given postId exists
-SELECT exists(SELECT 1 FROM tracks where postId=:postId);
+SELECT exists(SELECT 1
+              FROM tracks
+              WHERE postId = :postId);

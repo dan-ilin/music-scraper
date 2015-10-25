@@ -2,7 +2,6 @@
   (:gen-class :main true)
   [:require [clojure.tools.logging :as log]
             [clj-http.client :as client]
-            [clojure.java.io :as io]
             [music-scraper.store :as store]
             [music-scraper.reddit.client :as reddit]
             [music-scraper.spotify.client :as spotify]])
@@ -12,9 +11,9 @@
 (defn process-result [result]
   (if (not (:parse-failed? result))
     (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:track result)))) 0)]
+      (store/save-track result)
       (if (not (empty? (spotify/match-artist (:artist result) first-match)))
-        (reset! matched-tracks (conj @matched-tracks (:uri first-match))))
-      (store/save-track result))))
+        (reset! matched-tracks (conj @matched-tracks (:uri first-match)))))))
 
 (defn process-page [page]
   (let [filtered-results (filter #(not (store/track-exists? (:id (:data %)))) (:children page))]

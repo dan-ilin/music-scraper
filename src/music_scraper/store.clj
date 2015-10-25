@@ -2,13 +2,14 @@
   (:require [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [music-scraper.reddit.parse :as reddit]
-            [yesql.core :refer [defqueries]]))
+            [yesql.core :refer [defqueries]])
+  (:import (java.sql Timestamp)))
 
 (defn map-post [post]
   (let [{data :data} post]
     (let [parsed-data (reddit/parse-track-data (:title data))]
       {:post-id       (:id data)
-       :time          (new java.sql.Timestamp (:created_utc data))
+       :time          (new Timestamp (* 1000 (:created_utc data))) ;; convert epoch timestamp to java.sql.Timestamp
        :media-url     (:url data)
        :artist        (:artist parsed-data)
        :track         (:track parsed-data)

@@ -31,6 +31,7 @@
 (defn add-to-playlist [tracks]
   (if (not (empty? tracks))
     (doseq [x (partition 10 tracks)]
+      (Thread/sleep 100)
       (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
                            (:user-id credentials)
                            (:playlist-id credentials))
