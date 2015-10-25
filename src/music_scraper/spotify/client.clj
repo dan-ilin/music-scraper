@@ -30,11 +30,12 @@
 
 (defn add-to-playlist [tracks]
   (if (not (empty? tracks))
-    (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
-                         (:user-id credentials)
-                         (:playlist-id credentials))
-                 {:query-params {:uris (join "," tracks)}
-                  :oauth-token  @access-token})))
+    (doseq [x (partition 10 tracks)]
+      (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
+                           (:user-id credentials)
+                           (:playlist-id credentials))
+                   {:query-params {:uris (join "," x)}
+                    :oauth-token  @access-token}))))
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
