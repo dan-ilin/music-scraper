@@ -7,7 +7,9 @@
                  [org.clojure/tools.logging "0.3.1"]
                  [org.clojure/data.json "0.2.6"]
                  [clj-http "2.0.0"]
-                 [environ "1.0.1"]]
+                 [environ "1.0.1"]
+                 [yesql "0.4.2"]
+                 [postgresql "9.3-1102.jdbc41"]]
   :plugins [[lein-environ "1.0.1"]]
   :main music-scraper.core
   :aot [music-scraper.core])
