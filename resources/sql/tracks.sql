@@ -37,3 +37,7 @@ INSERT INTO tracks (
 SELECT exists(SELECT 1
               FROM tracks
               WHERE postId = :postId);
+
+-- name: update-spotify-uri
+-- Update spotifyUri field for track with given postId
+UPDATE tracks SET spotifyUri = :spotifyUri WHERE postId = :postId;
