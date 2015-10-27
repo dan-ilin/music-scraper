@@ -32,7 +32,7 @@
                  :key-fn keyword))
 
 (defn add-to-playlist [tracks]
-  (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))Re
+  (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))
   (if (not (empty? tracks))
     (doseq [x (partition 10 tracks)]
       (Thread/sleep 100)
@@ -44,3 +44,8 @@
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
+
+(defn start []
+  (refresh-token (:client-id credentials)
+                 (:client-secret credentials)
+                 (:refresh-token credentials)))

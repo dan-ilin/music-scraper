@@ -6,8 +6,7 @@ CREATE TABLE IF NOT EXISTS tracks (
   mediaUrl    TEXT      NOT NULL,
   artist      VARCHAR   NOT NULL,
   track       VARCHAR   NOT NULL,
-  parseFailed BOOL      NOT NULL,
-  spotifyUri  VARCHAR   NOT NULL
+  spotifyUri  VARCHAR
 );
 
 -- name: drop-tracks!
@@ -21,15 +20,13 @@ INSERT INTO tracks (
   time,
   mediaUrl,
   artist,
-  track,
-  parseFailed
+  track
 ) VALUES (
   :postId,
   :time,
   :mediaUrl,
   :artist,
-  :track,
-  :parseFailed
+  :track
 );
 
 -- name: track-exists

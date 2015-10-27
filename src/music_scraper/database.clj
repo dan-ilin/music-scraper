@@ -1,4 +1,4 @@
-(ns music-scraper.store
+(ns music-scraper.database
   (:require [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [music-scraper.reddit.parse :as reddit]
@@ -29,8 +29,8 @@
     (log/spyf "Query Results: %s" (apply query db-spec args))
     (catch Exception e (log/error e "Query failed for args:" args))))
 
-(defn setup []
-  (log/info "Setting up store")
+(defn start []
+  (log/info "Setting up database")
   (log-query #'create-tracks! nil))
 
 (defn save-track [track]
@@ -38,8 +38,7 @@
                                (:time track)
                                (:media-url track)
                                (:artist track)
-                               (:track track)
-                               (:parse-failed? track)]))
+                               (:track track)]))
 
 (defn add-spotify-uri [track uri]
   (log-query #'update-spotify-uri [uri, (:post-id track)]))
