@@ -41,7 +41,7 @@
                                (:track track)]))
 
 (defn add-spotify-uri [track uri]
-  (log-query #'update-spotify-uri [uri, (:post-id track)]))
+  (log-query #'update-spotify-uri! [uri, (:post-id track)]))
 
 (defn track-exists? [post-id]
   (:exists (log-query #'track-exists [post-id])))
