@@ -25,6 +25,7 @@
 
 (defn search-spotify-track [track]
   (log/infof "Searching Spotify for %s" track)
+  (Thread/sleep 25)
   (json/read-str (:body (client/get "https://api.spotify.com/v1/search"
                                     {:query-params {:q track :type "track"}
                                      :accept       :json
