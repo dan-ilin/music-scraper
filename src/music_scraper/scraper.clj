@@ -1,5 +1,6 @@
 (ns music-scraper.scraper
   (:require [music-scraper.reddit.client :as reddit]
+            [music-scraper.reddit.parse :as parse]
             [music-scraper.spotify.client :as spotify]
             [music-scraper.database :as database]
             [clojure.tools.logging :as log]
@@ -20,7 +21,7 @@
 
 (defn process-page [page]
   (let [filtered-results (filter #(not (database/track-exists? (:id (:data %)))) (:children page))]
-    (doseq [x (map #'database/map-post filtered-results)]
+    (doseq [x (map #'parse/map-post filtered-results)]
       (process-result x))))
 
 (defn process [page]

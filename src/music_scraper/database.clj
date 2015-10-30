@@ -2,46 +2,43 @@
   (:require [clojure.tools.logging :as log]
             [environ.core :refer [env]]
             [music-scraper.reddit.parse :as reddit]
-            [yesql.core :refer [defqueries]])
+            [yesql.core :refer [defqueries]]
+            [com.stuartsierra.component :as component])
   (:import (java.sql Timestamp)))
 
-(defn map-post [post]
-  (let [{data :data} post]
-    (let [parsed-data (reddit/parse-track-data (:title data))]
-      {:post-id       (:id data)
-       :time          (new Timestamp (* 1000 (:created_utc data))) ;; convert epoch timestamp to java.sql.Timestamp
-       :media-url     (:url data)
-       :artist        (:artist parsed-data)
-       :track         (:track parsed-data)
-       :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))})))
-
-(defqueries "sql/tracks.sql")
-
-(def db-spec {:classname   "org.postgresql.Driver"
-              :subprotocol "postgresql"
-              :subname     (env :database-url)
-              :user        (env :database-user)
-              :password    (env :database-pass)})
-
-(defn log-query [query args]
+(defn log-query [component query args]
   (log/infof "Running Query %s with args: %s" query args)
   (try
-    (log/spyf "Query Results: %s" (apply query db-spec args))
+    (log/spyf "Query Results: %s" (apply query (:db-spec component) args))
     (catch Exception e (log/error e "Query failed for args:" args))))
 
-(defn start []
-  (log/info "Setting up database")
-  (log-query #'create-tracks! nil))
+(defn save-track [component track]
+  (log-query component #'insert-track<! [(:post-id track)
+                                         (:time track)
+                                         (:media-url track)
+                                         (:artist track)
+                                         (:track track)]))
 
-(defn save-track [track]
-  (log-query #'insert-track<! [(:post-id track)
-                               (:time track)
-                               (:media-url track)
-                               (:artist track)
-                               (:track track)]))
+(defn add-spotify-uri [component track uri]
+  (log-query component #'update-spotify-uri! [uri, (:post-id track)]))
 
-(defn add-spotify-uri [track uri]
-  (log-query #'update-spotify-uri! [uri, (:post-id track)]))
+(defn track-exists? [component post-id]
+  (:exists (log-query component #'track-exists [post-id])))
 
-(defn track-exists? [post-id]
-  (:exists (log-query #'track-exists [post-id])))
+(defrecord Database [host port connection]
+  ;; Implement the Lifecycle protocol
+  component/Lifecycle
+
+  (start [component]
+    (log/info "Setting up database")
+    (defqueries "sql/tracks.sql")
+    (let [db-spec {:classname   "org.postgresql.Driver"
+                   :subprotocol "postgresql"
+                   :subname     (env :database-url)
+                   :user        (env :database-user)
+                   :password    (env :database-pass)}]
+      (create-tracks! db-spec nil)
+      (assoc component :db-spec db-spec)))
+
+  (stop [component]
+    (assoc component :db-spec nil)))
