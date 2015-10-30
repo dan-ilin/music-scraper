@@ -3,8 +3,7 @@
             [environ.core :refer [env]]
             [music-scraper.reddit.parse :as reddit]
             [yesql.core :refer [defqueries]]
-            [com.stuartsierra.component :as component])
-  (:import (java.sql Timestamp)))
+            [com.stuartsierra.component :as component]))
 
 (defn log-query [component query args]
   (log/infof "Running Query %s with args: %s" query args)
@@ -25,7 +24,7 @@
 (defn track-exists? [component post-id]
   (:exists (log-query component #'track-exists [post-id])))
 
-(defrecord Database [host port connection]
+(defrecord Database [url user pass]
   ;; Implement the Lifecycle protocol
   component/Lifecycle
 
@@ -34,11 +33,14 @@
     (defqueries "sql/tracks.sql")
     (let [db-spec {:classname   "org.postgresql.Driver"
                    :subprotocol "postgresql"
-                   :subname     (env :database-url)
-                   :user        (env :database-user)
-                   :password    (env :database-pass)}]
+                   :subname     url
+                   :user        user
+                   :password    pass}]
       (create-tracks! db-spec nil)
       (assoc component :db-spec db-spec)))
 
   (stop [component]
     (assoc component :db-spec nil)))
+
+(defn new-database [url user pass]
+  (map->Database {:url url :user user :pass pass}))

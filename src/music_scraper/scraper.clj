@@ -35,8 +35,7 @@
    (if (not (nil? (:after page)))
      (process scraper (reddit/get-page reddit/url (:after page))))))
 
-(defrecord Database [database spotify]
-  ;; Implement the Lifecycle protocol
+(defrecord Scraper [database spotify]
   component/Lifecycle
 
   (start [scraper]
@@ -47,3 +46,6 @@
   (stop [scraper]
     (spotify/add-to-playlist (:spotify scraper) (:matched-tracks scraper))
     (assoc scraper :connection nil)))
+
+(defn new-scraper []
+  (map->Scraper {}))

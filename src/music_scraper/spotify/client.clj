@@ -17,21 +17,6 @@
                   :key-fn keyword))
   ([client] (refresh-token (:client-id client) (:client-secret client) (:refresh-token client))))
 
-(defrecord client [client-id client-secret refresh-token user-id playlist-id]
-  component/Lifecycle
-
-  (start [component]
-    (let [resp (refresh-token client-id client-secret refresh-token)]
-      (assoc component :client-id client-id
-                       :client-secret client-secret
-                       :access-token (:access-token resp)
-                       :refresh-token (:refresh-token resp)
-                       :user-id user-id
-                       :playlist-id playlist-id)))
-
-  (stop [component]
-    (assoc component :access-token nil)))
-
 (defn search-spotify-track [client track]
   (log/infof "Searching Spotify for %s" track)
   (Thread/sleep 25)
@@ -54,3 +39,26 @@
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
+
+
+(defrecord Client [client-id client-secret refresh-token user-id playlist-id]
+  component/Lifecycle
+
+  (start [component]
+    (let [resp (refresh-token client-id client-secret refresh-token)]
+      (assoc component :client-id client-id
+                       :client-secret client-secret
+                       :access-token (:access-token resp)
+                       :refresh-token (:refresh-token resp)
+                       :user-id user-id
+                       :playlist-id playlist-id)))
+
+  (stop [component]
+    (assoc component :access-token nil)))
+
+(defn new-client [client-id client-secret refresh-token user-id playlist-id]
+  (map->Client {:client-id     client-id
+                :client-secret client-secret
+                :refresh-token refresh-token
+                :user-id       user-id
+                :playlist-id   playlist-id}))

@@ -13,7 +13,8 @@
                  [clj-http "2.0.0"]
                  [environ "1.0.1"]
                  [yesql "0.4.2"]
-                 [postgresql "9.3-1102.jdbc41"]]
+                 [postgresql "9.3-1102.jdbc41"]
+                 [com.stuartsierra/component "0.3.0"]]
   :plugins [[lein-environ "1.0.1"]]
   :main music-scraper.core
   :aot [music-scraper.core])
