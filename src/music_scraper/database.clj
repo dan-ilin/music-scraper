@@ -1,9 +1,10 @@
 (ns music-scraper.database
   (:require [clojure.tools.logging :as log]
             [environ.core :refer [env]]
-            [music-scraper.reddit.parse :as reddit]
             [yesql.core :refer [defqueries]]
             [com.stuartsierra.component :as component]))
+
+(defqueries "sql/tracks.sql")
 
 (defn log-query [component query args]
   (log/infof "Running Query %s with args: %s" query args)
@@ -25,18 +26,16 @@
   (:exists (log-query component #'track-exists [post-id])))
 
 (defrecord Database [url user pass]
-  ;; Implement the Lifecycle protocol
   component/Lifecycle
 
   (start [component]
     (log/info "Setting up database")
-    (defqueries "sql/tracks.sql")
     (let [db-spec {:classname   "org.postgresql.Driver"
                    :subprotocol "postgresql"
                    :subname     url
                    :user        user
                    :password    pass}]
-      (create-tracks! db-spec nil)
+      (create-tracks! db-spec)
       (assoc component :db-spec db-spec)))
 
   (stop [component]

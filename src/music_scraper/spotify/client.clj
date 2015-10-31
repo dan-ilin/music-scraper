@@ -41,11 +41,11 @@
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
 
 
-(defrecord Client [client-id client-secret refresh-token user-id playlist-id]
+(defrecord Client [client-id client-secret token user-id playlist-id]
   component/Lifecycle
 
   (start [component]
-    (let [resp (refresh-token client-id client-secret refresh-token)]
+    (let [resp (refresh-token client-id client-secret token)]
       (assoc component :client-id client-id
                        :client-secret client-secret
                        :access-token (:access-token resp)
@@ -59,6 +59,6 @@
 (defn new-client [client-id client-secret refresh-token user-id playlist-id]
   (map->Client {:client-id     client-id
                 :client-secret client-secret
-                :refresh-token refresh-token
+                :token         refresh-token
                 :user-id       user-id
                 :playlist-id   playlist-id}))

@@ -1,10 +1,10 @@
 (ns music-scraper.core
   (:gen-class :main true)
-  [:require [environ.core :refer [env]]
+  (:require [environ.core :refer [env]]
             [music-scraper.database :refer [new-database]]
             [music-scraper.spotify.client :refer [new-client]]
             [music-scraper.scraper :refer [new-scraper]]
-            [com.stuartsierra.component :as component]])
+            [com.stuartsierra.component :as component]))
 
 (defn scraper-system [config-options]
   (let [{:keys [database-url
