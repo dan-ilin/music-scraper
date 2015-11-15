@@ -23,7 +23,7 @@
                                    :password    database-pass})
           :spotify (new-client spotify-client-id spotify-client-secret refresh-token user-id playlist-id)
           :scraper (new-scraper))
-        (component/system-using {:scraper [:database :database]}))))
+        (component/system-using {:scraper [:database :spotify]}))))
 
 (defn -main [& args]
   (let [system (scraper-system {:database-url          (env :database-url)
