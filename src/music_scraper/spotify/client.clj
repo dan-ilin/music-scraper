@@ -15,7 +15,7 @@
                                        :accept      :json
                                        :basic-auth  [client-id client-secret]}))
                   :key-fn keyword))
-  ([client] (refresh-token (:client-id client) (:client-secret client) (:refresh-token client))))
+  ([client] (refresh-token (:client-id client) (:client-secret client) (:token client))))
 
 (defn search-spotify-track [client track]
   (log/infof "Searching Spotify for %s" track)
@@ -44,17 +44,18 @@
 (defrecord Client [client-id client-secret token user-id playlist-id]
   component/Lifecycle
 
-  (start [component]
+  (start [this]
+    (log/info "Starting Spotify client")
     (let [resp (refresh-token client-id client-secret token)]
-      (assoc component :client-id client-id
-                       :client-secret client-secret
-                       :access-token (:access-token resp)
-                       :refresh-token (:refresh-token resp)
-                       :user-id user-id
-                       :playlist-id playlist-id)))
+      (assoc this :client-id client-id
+                  :client-secret client-secret
+                  :access-token (:access_token resp)
+                  :user-id user-id
+                  :playlist-id playlist-id)))
 
-  (stop [component]
-    (assoc component :access-token nil)))
+  (stop [this]
+    (log/info "Stopping Spotify client")
+    (assoc this :access-token nil)))
 
 (defn new-client [client-id client-secret refresh-token user-id playlist-id]
   (map->Client {:client-id     client-id

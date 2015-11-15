@@ -24,28 +24,26 @@
       (process-result scraper x))))
 
 (defn process
-  ([scraper]
-   (log/info "Processing results")
-   (process scraper (reddit/get-page-data
-                      (:body (client/get reddit/url {:accept        :json
-                                                     :client-params {"http.useragent" "music-scraper"}})))))
   ([scraper page]
    (process-page scraper page)
    (Thread/sleep 500)
    (if (not (nil? (:after page)))
-     (process scraper (reddit/get-page reddit/url (:after page))))))
+     (process scraper (reddit/get-page reddit/url (:after page)))))
+  ([scraper]
+   (log/info "Processing results")
+   (process scraper (reddit/get-page-data
+                      (:body (client/get reddit/url {:accept        :json
+                                                     :client-params {"http.useragent" "music-scraper"}}))))))
 
 (defrecord Scraper [database spotify]
   component/Lifecycle
 
-  (start [scraper]
-    (assoc scraper :matched-tracks (atom [])
-                   :database database
-                   :spotify spotify))
+  (start [this]
+    (log/info "Starting scraper")
+    (assoc this :matched-tracks (atom [])))
 
-  (stop [scraper]
-    (spotify/add-to-playlist (:spotify scraper) (:matched-tracks scraper))
-    (assoc scraper :connection nil)))
+  (stop [this]
+    (log/info "Stopping scraper")
+    (spotify/add-to-playlist (:spotify this) (:matched-tracks this))))
 
-(defn new-scraper []
-  (map->Scraper {}))
+(defn new-scraper [] (map->Scraper {}))
