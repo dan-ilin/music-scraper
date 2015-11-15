@@ -6,9 +6,5 @@
 
 (deftest starts?
   (testing "starts?"
-    (let [database (new-database {:classname   "org.postgresql.Driver"
-                                  :subprotocol "postgresql"
-                                  :subname     (env :database-url)
-                                  :user        (env :database-user)
-                                  :password    (env :database-pass)})]
+    (let [database (new-database (env :db-spec))]
       (is (not (nil? (:db-spec (component/start database))))))))

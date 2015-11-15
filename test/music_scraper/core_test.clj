@@ -6,14 +6,12 @@
 
 (deftest system-starts?
   (testing "system-starts?"
-    (let [system (component/start (new-system {:database-url          (env :database-url)
-                                                   :database-user         (env :database-user)
-                                                   :database-pass         (env :database-pass)
-                                                   :spotify-client-id     (env :spotify-client-id)
-                                                   :spotify-client-secret (env :spotify-client-secret)
-                                                   :refresh-token         (env :refresh-token)
-                                                   :user-id               (env :user-id)
-                                                   :playlist-id           (env :playlist-id)}))]
+    (let [system (component/start (new-system {:db-spec               (env :db-spec)
+                                               :spotify-client-id     (env :spotify-client-id)
+                                               :spotify-client-secret (env :spotify-client-secret)
+                                               :refresh-token         (env :refresh-token)
+                                               :user-id               (env :user-id)
+                                               :playlist-id           (env :playlist-id)}))]
       (is (and (not (nil? (:database system)))
                (not (nil? (:spotify system)))
                (not (nil? (:scraper system)))

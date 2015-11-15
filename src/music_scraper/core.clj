@@ -7,33 +7,25 @@
             [com.stuartsierra.component :as component]))
 
 (defn new-system [config-options]
-  (let [{:keys [database-url
-                database-user
-                database-pass
+  (let [{:keys [db-spec
                 spotify-client-id
                 spotify-client-secret
                 refresh-token
                 user-id
                 playlist-id]} config-options]
     (-> (component/system-map
-          :database (new-database {:classname   "org.postgresql.Driver"
-                                   :subprotocol "postgresql"
-                                   :subname     database-url
-                                   :user        database-user
-                                   :password    database-pass})
+          :database (new-database db-spec)
           :spotify (new-client spotify-client-id spotify-client-secret refresh-token user-id playlist-id)
           :scraper (new-scraper))
         (component/system-using {:scraper [:database :spotify]}))))
 
 (defn -main [& args]
-  (let [system (new-system {:database-url          (env :database-url)
-                                :database-user         (env :database-user)
-                                :database-pass         (env :database-pass)
-                                :spotify-client-id     (env :spotify-client-id)
-                                :spotify-client-secret (env :spotify-client-secret)
-                                :refresh-token         (env :refresh-token)
-                                :user-id               (env :user-id)
-                                :playlist-id           (env :playlist-id)})]
+  (let [system (new-system {:db-spec               (env :db-spec)
+                            :spotify-client-id     (env :spotify-client-id)
+                            :spotify-client-secret (env :spotify-client-secret)
+                            :refresh-token         (env :refresh-token)
+                            :user-id               (env :user-id)
+                            :playlist-id           (env :playlist-id)})]
     (component/start system)
     (process (:scraper system))
     (component/stop system)))

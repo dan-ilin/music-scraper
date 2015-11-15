@@ -14,10 +14,10 @@
 
 (defn save-track [db track]
   (log-query db #'insert-track<! [(:post-id track)
-                                         (:time track)
-                                         (:media-url track)
-                                         (:artist track)
-                                         (:track track)]))
+                                  (:time track)
+                                  (:media-url track)
+                                  (:artist track)
+                                  (:track track)]))
 
 (defn add-spotify-uri [db track uri]
   (log-query db #'update-spotify-uri! [uri, (:post-id track)]))
@@ -30,8 +30,8 @@
 
   (start [this]
     (log/info "Starting database")
-      (create-tracks! db-spec)
-      (assoc this :db-spec db-spec))
+    (create-tracks! db-spec)
+    (assoc this :db-spec db-spec))
 
   (stop [this]
     (log/info "Stopping database")
