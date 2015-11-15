@@ -44,6 +44,6 @@
 
   (stop [this]
     (log/info "Stopping scraper")
-    (spotify/add-to-playlist (:spotify this) (:matched-tracks this))))
+    (spotify/add-to-playlist (:spotify this) @(:matched-tracks this))))
 
 (defn new-scraper [] (map->Scraper {}))

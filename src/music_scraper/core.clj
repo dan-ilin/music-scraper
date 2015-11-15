@@ -20,12 +20,12 @@
         (component/system-using {:scraper [:database :spotify]}))))
 
 (defn -main [& args]
-  (let [system (new-system {:db-spec               (env :db-spec)
-                            :spotify-client-id     (env :spotify-client-id)
-                            :spotify-client-secret (env :spotify-client-secret)
-                            :refresh-token         (env :refresh-token)
-                            :user-id               (env :user-id)
-                            :playlist-id           (env :playlist-id)})]
-    (component/start system)
+  (let [system (component/start
+                 (new-system {:db-spec               (env :db-spec)
+                              :spotify-client-id     (env :spotify-client-id)
+                              :spotify-client-secret (env :spotify-client-secret)
+                              :refresh-token         (env :refresh-token)
+                              :user-id               (env :user-id)
+                              :playlist-id           (env :playlist-id)}))]
     (process (:scraper system))
     (component/stop system)))
