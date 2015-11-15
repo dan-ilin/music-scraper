@@ -6,7 +6,7 @@
             [music-scraper.scraper :refer [new-scraper process]]
             [com.stuartsierra.component :as component]))
 
-(defn scraper-system [config-options]
+(defn new-system [config-options]
   (let [{:keys [database-url
                 database-user
                 database-pass
@@ -26,7 +26,7 @@
         (component/system-using {:scraper [:database :spotify]}))))
 
 (defn -main [& args]
-  (let [system (scraper-system {:database-url          (env :database-url)
+  (let [system (new-system {:database-url          (env :database-url)
                                 :database-user         (env :database-user)
                                 :database-pass         (env :database-pass)
                                 :spotify-client-id     (env :spotify-client-id)

@@ -6,7 +6,7 @@
 
 (deftest system-starts?
   (testing "system-starts?"
-    (let [system (component/start (scraper-system {:database-url          (env :database-url)
+    (let [system (component/start (new-system {:database-url          (env :database-url)
                                                    :database-user         (env :database-user)
                                                    :database-pass         (env :database-pass)
                                                    :spotify-client-id     (env :spotify-client-id)
