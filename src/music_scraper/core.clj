@@ -4,8 +4,7 @@
             [music-scraper.database :refer [new-database]]
             [music-scraper.spotify.client :refer [new-client]]
             [music-scraper.scraper :refer [new-scraper process]]
-            [com.stuartsierra.component :as component]
-            [clojure.tools.logging :as log]))
+            [com.stuartsierra.component :as component]))
 
 (defn scraper-system [config-options]
   (let [{:keys [database-url

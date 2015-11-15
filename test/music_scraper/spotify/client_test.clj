@@ -2,8 +2,7 @@
   (:require [clojure.test :refer :all]
             [environ.core :refer [env]]
             [music-scraper.spotify.client :refer :all]
-            [com.stuartsierra.component :as component]
-            [clojure.tools.logging :as log]))
+            [com.stuartsierra.component :as component]))
 
 (deftest starts?
   (testing "starts?"
