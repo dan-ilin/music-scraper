@@ -26,6 +26,14 @@
                                      :oauth-token  (:access-token client)}))
                  :key-fn keyword))
 
+(defn get-playlist-tracks
+  ([client url]
+   (json/read-str
+     (:body (client/get url {:query-params {:fields "items(track(uri))"}
+                             :oauth-token  (:access-token client)}))))
+  ([client user-id playlist-id]
+   (get-playlist-tracks client (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks" user-id playlist-id))))
+
 (defn add-to-playlist [client tracks]
   (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))
   (if (not (empty? tracks))
