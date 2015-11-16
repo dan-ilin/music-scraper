@@ -29,7 +29,7 @@
 (defn add-to-playlist [client tracks]
   (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))
   (if (not (empty? tracks))
-    (doseq [x (partition 10 tracks)]
+    (doseq [x (partition 100 tracks)]
       (Thread/sleep 100)
       (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
                            (:user-id client)
