@@ -27,20 +27,20 @@
                  :key-fn keyword))
 
 (defn get-playlist-tracks
-  ([client url tracks]
+  ([client tracks url]
    (let [resp (json/read-str
                 (:body (client/get url {:query-params {:fields "next,items(track(uri))"}
-                                        :oauth-token  (:access-token client)})))]
-     (if (not (nil? (get resp "next")))
-       (get-playlist-tracks client
-                            (get resp "next")
-                            (conj tracks (get resp "items")))
-       (conj tracks (get resp "items")))))
+                                        :oauth-token  (:access-token client)})))
+         items (conj tracks (map #(get (get % "track") "uri") (get resp "items")))
+         next (get resp "next")]
+     (if (not (nil? next))
+       (get-playlist-tracks client items next)
+       items)))
   ([client]
    (get-playlist-tracks client
+                        []
                         (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
-                                (:user-id client) (:playlist-id client))
-                        [])))
+                                (:user-id client) (:playlist-id client)))))
 
 (defn add-to-playlist [client tracks]
   (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))
