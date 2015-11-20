@@ -12,6 +12,7 @@
                                                     com.sun.jmx/jmxri]]
                  [org.clojure/data.json "0.2.6"]
                  [clj-http "2.0.0"]
+                 [cheshire "5.5.0"]
                  [environ "1.0.1"]
                  [yesql "0.4.2"]
                  [postgresql "9.3-1102.jdbc41"]]

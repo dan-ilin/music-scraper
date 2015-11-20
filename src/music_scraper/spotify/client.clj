@@ -43,35 +43,37 @@
                                 (:user-id client) (:playlist-id client)))))
 
 (defn add-to-playlist [client tracks]
-  (log/infof "Adding %d new tracks to Spotify playlist" (count tracks))
-  (if (not (empty? tracks))
-    (doseq [x (partition 100 tracks)]
-      (Thread/sleep 100)
+  (let [filtered-tracks (filter #(not (contains? @(:playlist-tracks client) %)) tracks)]
+    (log/infof "Adding %d new tracks to playlist %s" (count filtered-tracks) (:playlist-id client))
+    (doseq [x (partition 100 100 nil filtered-tracks)]
       (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
                            (:user-id client)
                            (:playlist-id client))
-                   {:query-params {:uris (join "," x)}
-                    :oauth-token  (:access-token client)}))))
+                   {:form-params  {:uris x}
+                    :content-type :json
+                    :oauth-token  (:access-token client)})
+      (reset! (:playlist-tracks client) (conj @(:playlist-tracks client) x)))))
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))
-
 
 (defrecord Client [client-id client-secret token user-id playlist-id]
   component/Lifecycle
 
   (start [this]
     (log/info "Starting Spotify client")
-    (let [resp (refresh-token client-id client-secret token)]
-      (assoc this :client-id client-id
-                  :client-secret client-secret
-                  :access-token (:access_token resp)
-                  :user-id user-id
-                  :playlist-id playlist-id)))
+    (let [resp (refresh-token client-id client-secret token)
+          client (assoc this :client-id client-id
+                             :client-secret client-secret
+                             :access-token (:access_token resp)
+                             :user-id user-id
+                             :playlist-id playlist-id)]
+      (assoc client :playlist-tracks (atom (set (get-playlist-tracks client))))))
 
   (stop [this]
     (log/info "Stopping Spotify client")
-    (assoc this :access-token nil)))
+    (assoc this :access-token nil
+                :playlist-tracks nil)))
 
 (defn new-client [client-id client-secret refresh-token user-id playlist-id]
   (map->Client {:client-id     client-id
