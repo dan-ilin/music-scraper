@@ -17,4 +17,3 @@ profiles.clj
 docker-compose.yml
 
 log/*
-log4j.properties
