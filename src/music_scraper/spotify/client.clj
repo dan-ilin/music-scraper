@@ -31,7 +31,7 @@
    (let [resp (json/read-str
                 (:body (client/get url {:query-params {:fields "next,items(track(uri))"}
                                         :oauth-token  (:access-token client)})))
-         items (conj tracks (map #(get (get % "track") "uri") (get resp "items")))
+         items (concat tracks (map #(get (get % "track") "uri") (get resp "items")))
          next (get resp "next")]
      (if (not (nil? next))
        (get-playlist-tracks client items next)
@@ -52,7 +52,7 @@
                    {:form-params  {:uris x}
                     :content-type :json
                     :oauth-token  (:access-token client)})
-      (reset! (:playlist-tracks client) (conj @(:playlist-tracks client) x)))))
+      (reset! (:playlist-tracks client) (concat @(:playlist-tracks client) x)))))
 
 (defn match-artist [artist result]
   (filter (fn [y] (.equalsIgnoreCase artist (:name y))) (:artists result)))

@@ -23,11 +23,11 @@
        :track  nil})))
 
 (defn map-post [post]
-  (let [{data :data} post]
-    (let [parsed-data (parse-track-data (:title data))]
-      {:post-id       (:id data)
-       :time          (new Timestamp (* 1000 (:created_utc data))) ;; convert epoch timestamp to java.sql.Timestamp
-       :media-url     (:url data)
-       :artist        (:artist parsed-data)
-       :track         (:track parsed-data)
-       :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))})))
+  (let [{data :data} post
+        parsed-data (parse-track-data (:title data))]
+    {:post-id       (:id data)
+     :time          (new Timestamp (* 1000 (:created_utc data))) ;; convert epoch timestamp to java.sql.Timestamp
+     :media-url     (:url data)
+     :artist        (:artist parsed-data)
+     :track         (:track parsed-data)
+     :parse-failed? (or (nil? (:artist parsed-data)) (nil? (:track parsed-data)))}))

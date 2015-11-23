@@ -7,9 +7,9 @@
 (defqueries "sql/tracks.sql")
 
 (defn log-query [db-spec query args]
-  (log/infof "Running Query %s with args: %s" query args)
+  (log/debugf "Running Query %s with args: %s" query args)
   (try
-    (log/spyf "Query Results: %s" (apply query db-spec args))
+    (log/debugf "Query Results: %s" (apply query db-spec args))
     (catch Exception e (log/error e "Query failed for args:" args))))
 
 (defn save-track [db track]
