@@ -17,7 +17,8 @@
                                              (:time track)
                                              (:media-url track)
                                              (:artist track)
-                                             (:track track)]))
+                                             (:track track)
+                                             (:parse-failed? track)]))
 
 (defn add-spotify-uri [db track uri]
   (log-query (:db-spec db) #'update-spotify-uri! [uri, (:post-id track)]))

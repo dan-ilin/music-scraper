@@ -12,9 +12,9 @@
   (database/add-spotify-uri (:database scraper) track (:uri match)))
 
 (defn process-result [scraper result]
+  (database/save-track (:database scraper) result)
   (if (not (:parse-failed? result))
     (let [first-match (get (:items (:tracks (spotify/search-spotify-track (:spotify scraper) (:track result)))) 0)]
-      (database/save-track (:database scraper) result)
       (if (not (empty? (spotify/match-artist (:artist result) first-match)))
         (add-match scraper first-match result)))))
 
