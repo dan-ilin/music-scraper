@@ -43,7 +43,7 @@
                                 (:user-id client) (:playlist-id client)))))
 
 (defn add-to-playlist [client tracks]
-  (let [filtered-tracks (filter #(not (contains? @(:playlist-tracks client) %)) tracks)]
+  (let [filtered-tracks (filter #(nil? (some #{%} @(:playlist-tracks client))) tracks)]
     (log/infof "Adding %d new tracks to playlist %s" (count filtered-tracks) (:playlist-id client))
     (doseq [x (partition 100 100 nil filtered-tracks)]
       (client/post (format "https://api.spotify.com/v1/users/%s/playlists/%s/tracks"
