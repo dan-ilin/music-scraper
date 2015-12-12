@@ -47,7 +47,7 @@
     out))
 
 (defn result-processor [in scraper]
-  (let [out (chan)]
+  (let [out (chan 1000 (partition-all 100))]
     (go (while true
           (let [x (process-result scraper (<! in))]
             (if (not (nil? x))
