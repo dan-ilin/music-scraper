@@ -15,7 +15,8 @@
                  [cheshire "5.5.0"]
                  [environ "1.0.1"]
                  [yesql "0.4.2"]
-                 [postgresql "9.3-1102.jdbc41"]]
+                 [postgresql "9.3-1102.jdbc41"]
+                 [org.clojure/core.async "0.2.374"]]
   :plugins [[lein-environ "1.0.1"]]
   :main music-scraper.core
   :aot [music-scraper.core])
