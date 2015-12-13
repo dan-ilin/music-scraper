@@ -20,8 +20,8 @@
                                              (:track track)
                                              (:parse-failed? track)]))
 
-(defn add-spotify-uri [db track uri]
-  (log-query (:db-spec db) #'update-spotify-uri! [uri, (:post-id track)]))
+(defn add-spotify-uri [db track]
+  (log-query (:db-spec db) #'update-spotify-uri! [(:uri track), (:post-id track)]))
 
 (defn track-exists? [db post-id]
   (:exists (first (log-query (:db-spec db) #'track-exists [post-id]))))
