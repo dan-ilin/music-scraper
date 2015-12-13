@@ -24,9 +24,6 @@
                                                      {:accept        :json
                                                       :client-params {"http.useragent" "music-scraper"}}))))))
 
-(defn process-page [scraper page]
-  (map #'parse/map-post (filter #(not (database/track-exists? (:database scraper) (:id (:data %)))) (:children page))))
-
 (defn add-match [scraper uri track]
   (log/info uri)
   (database/add-spotify-uri (:database scraper) track uri)
@@ -42,7 +39,14 @@
 (defn page-processor [in scraper]
   (let [out (chan)]
     (go (while true
-          (doseq [x (filter #(not (nil? %)) (process-page scraper (<! in)))]
+          (let [x (filter #(not (database/track-exists? (:database scraper) (:id (:data %)))) (:children (<! in)))]
+            (>! out x))))
+    out))
+
+(defn page-children-processor [in]
+  (let [out (chan)]
+    (go (while true
+          (doseq [x (filter #(not (nil? %)) (map #'parse/map-post (<! in)))]
             (>! out x))))
     out))
 
@@ -65,9 +69,8 @@
   (start [this]
     (log/info "Starting scraper")
     (let [in-chan (chan)]
-      (assoc this :matched-tracks (atom [])
-                  :in-chan in-chan
-                  :out-chan (spotify-processor (result-processor (page-processor in-chan this) this) this))))
+      (assoc this :in-chan in-chan
+                  :out-chan (spotify-processor (result-processor (page-children-processor (page-processor in-chan this)) this) this))))
 
   (stop [this]
     (log/info "Stopping scraper")))
