@@ -59,7 +59,6 @@
   (go (while true
         (let [x (<! in)]
           (database/add-spotify-uri (:database scraper) x)
-          (Thread/sleep 100)
           (spotify/add-to-playlist (:spotify scraper) (:uri x))))))
 
 (defrecord Scraper [database spotify]
