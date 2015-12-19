@@ -13,7 +13,7 @@
 
 (defn process
   ([scraper page]
-   (>!! (:in-chan scraper) page)
+   (>!! (:in-chan scraper) (:children page))
    (Thread/sleep 500)
    (if (not (nil? (:after page)))
      (process scraper (reddit/get-page reddit/url (:after page)))))
@@ -27,7 +27,7 @@
 (defn page-processor [in scraper]
   (let [out (chan)]
     (go (while true
-          (let [x (filter #(not (database/track-exists? (:database scraper) (:id (:data %)))) (:children (<! in)))]
+          (let [x (filter #(not (database/track-exists? (:database scraper) (:id (:data %)))) (<! in))]
             (>! out x))))
     out))
 
