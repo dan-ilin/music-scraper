@@ -66,9 +66,14 @@
 
   (start [this]
     (log/info "Starting scraper")
-    (let [in-chan (chan)]
+    (let [in-chan (chan)
+          page-processor (page-processor in-chan this)
+          child-processor (page-children-processor page-processor)
+          result-saver (result-saver child-processor this)
+          result-searcher (result-searcher result-saver this)
+          spotify-processor (spotify-processor result-searcher this)]
       (assoc this :in-chan in-chan
-                  :out-chan (spotify-processor (result-searcher (result-saver (page-children-processor (page-processor in-chan this)) this) this) this))))
+                  :out-chan spotify-processor)))
 
   (stop [this]
     (log/info "Stopping scraper")))
