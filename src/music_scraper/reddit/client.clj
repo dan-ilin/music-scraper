@@ -1,8 +1,9 @@
 (ns music-scraper.reddit.client
   (:require [clj-http.client :as client]
-            [clojure.data.json :as json]))
+            [clojure.data.json :as json]
+            [environ.core :refer [env]]))
 
-(def url "https://www.reddit.com/r/listentothis/new.json")
+(def url (env :url))
 
 (defn get-page-data [body]
   (:data (json/read-str body :key-fn keyword)))
